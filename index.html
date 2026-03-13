@@ -25,6 +25,63 @@
             --signature-color: #95a5a6;
         }
 
+        [data-theme="light"] {
+            --bg-primary: #f6f8fa;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f3f4f6;
+            --text-primary: #1f2937;
+            --text-secondary: #4b5563;
+            --text-muted: #6b7280;
+            --border: #e5e7eb;
+            --accent-blue: #2563eb;
+            --accent-green: #16a34a;
+            --accent-red: #dc2626;
+            --accent-yellow: #ca8a04;
+            --accent-purple: #7c3aed;
+            --header-color: #dc2626;
+            --payload-color: #0d9488;
+            --signature-color: #6b7280;
+        }
+
+        /* Theme toggle */
+        .theme-toggle {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 2rem;
+            z-index: 1000;
+        }
+        
+        .theme-toggle button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 2rem;
+            height: 2rem;
+            border: none;
+            background: transparent;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+            color: var(--text-muted);
+        }
+        
+        .theme-toggle button:hover {
+            background: var(--bg-tertiary);
+        }
+        
+        .theme-toggle button.active {
+            background: var(--accent-blue);
+            color: white;
+        }
+
         * {
             box-sizing: border-box;
             margin: 0;
@@ -376,6 +433,11 @@
     </style>
 </head>
 <body>
+    <div class="theme-toggle">
+        <button data-theme="light" title="Light">☀️</button>
+        <button data-theme="dark" title="Dark">🌙</button>
+        <button data-theme="system" title="System" class="active">💻</button>
+    </div>
     <div class="container">
         <header>
             <h1>🔐 JWT Decoder</h1>
@@ -743,6 +805,42 @@
                 history.replaceState(null, '', window.location.pathname);
             }
         });
+
+        // Theme management
+        (function() {
+            const themeButtons = document.querySelectorAll('.theme-toggle button');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+            
+            function getSystemTheme() {
+                return prefersDark.matches ? 'dark' : 'light';
+            }
+            
+            function applyTheme(theme) {
+                const effectiveTheme = theme === 'system' ? getSystemTheme() : theme;
+                document.documentElement.setAttribute('data-theme', effectiveTheme);
+            }
+            
+            function setTheme(theme) {
+                localStorage.setItem('theme', theme);
+                applyTheme(theme);
+                themeButtons.forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.theme === theme);
+                });
+            }
+            
+            const savedTheme = localStorage.getItem('theme') || 'system';
+            setTheme(savedTheme);
+            
+            themeButtons.forEach(btn => {
+                btn.addEventListener('click', () => setTheme(btn.dataset.theme));
+            });
+            
+            prefersDark.addEventListener('change', () => {
+                if (localStorage.getItem('theme') === 'system') {
+                    applyTheme('system');
+                }
+            });
+        })();
     </script>
 </body>
 </html>
